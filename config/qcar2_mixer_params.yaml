@@ -1,0 +1,18 @@
+qcar2_mixer:
+  ros__parameters:
+    input_motor_topics:
+      - "/lane/motor_cmd"
+      - "/nav2/motor_cmd"
+      - "/teleop/motor_cmd"
+
+    output_motor_topic: "/qcar2_motor_speed_cmd"
+
+    lidar_topic: "/scan"
+
+    person_detection_topic: "/detections/person"
+    stop_sign_topic: "/detections/stop_sign"
+    traffic_light_topic: "/detections/traffic_light"
+    zebra_crossing_topic: "/detections/zebra_crossing"
+
+    input_motor_msg_type: "qcar2_interfaces/msg/MotorCommands"
+    output_motor_msg_type: "qcar2_interfaces/msg/MotorCommands"
