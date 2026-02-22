@@ -249,12 +249,9 @@ class QCar2Mixer(Node):
             self.lidar_obstacle_detected = False
             return
 
-        # Calculate angle per ray
-        angles = np.arange(
-            msg.angle_min,
-            msg.angle_max,
-            msg.angle_increment
-        )
+        # Calculate angle per ray - use linspace to match exact array size
+        num_ranges = len(msg.ranges)
+        angles = np.linspace(msg.angle_min, msg.angle_max, num_ranges)
 
         # Find rays within ±angle_tolerance from 0 (forward)
         angle_tol_rad = math.radians(self.lidar_angle_tolerance)
@@ -276,6 +273,11 @@ class QCar2Mixer(Node):
     def _callback_motor_cmd(self, msg: MotorCommands):
         """Store latest upstream MotorCommands."""
         self.latest_motor_cmd = msg
+        # Debug: confirm we're receiving motor commands
+        self.get_logger().debug(
+            f'Received motor cmd: {msg.motor_names} = {msg.values}',
+            throttle_duration_sec=1.0
+        )
 
     def _callback_person(self, msg: PersonDetection):
         """Track person detection with post-disappear wait."""
@@ -312,6 +314,15 @@ class QCar2Mixer(Node):
 
     def _control_loop(self):
         """Evaluate all safety/traffic conditions and publish final command."""
+        # Debug heartbeat (throttled)
+        has_input = self.latest_motor_cmd is not None
+        self.get_logger().info(
+            f'[MIXER] has_input={has_input} lidar={self.lidar_obstacle_detected} '
+            f'person={self.person_detected} stopsign={self.stop_sign_state} '
+            f'tl={self.traffic_light_detected} zebra={self.zebra_detected}',
+            throttle_duration_sec=2.0
+        )
+
         # If no upstream command yet, publish IDLE (stop) to ensure hardware gets commands
         if self.latest_motor_cmd is None:
             self._emit(
@@ -472,6 +483,11 @@ class QCar2Mixer(Node):
         self.pub_motor_cmd.publish(msg)
         self._publish_leds(led)
         self._publish_state(state)
+        # Debug: confirm we're publishing
+        self.get_logger().debug(
+            f'EMIT: steer={steering:.3f} speed={speed:.3f} state={state}',
+            throttle_duration_sec=1.0
+        )
 
     def _emit_bypass(self, state: str = 'BYPASS'):
         """Publish upstream command unchanged."""
