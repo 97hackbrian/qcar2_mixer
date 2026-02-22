@@ -19,11 +19,12 @@ setup(
     zip_safe=True,
     maintainer='hackbrian',
     maintainer_email='brayandurantoconas@gmail.com',
-    description='QCar2 final motor command mixer package (structure only).',
+    description='QCar2 final motor command mixer package with safety logic.',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'qcar2_mixer_node = qcar2_mixer.mixer_node:main',
         ],
     },
 )

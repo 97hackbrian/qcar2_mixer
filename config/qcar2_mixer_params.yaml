@@ -1,18 +1,36 @@
 qcar2_mixer:
   ros__parameters:
-    input_motor_topics:
-      - "/lane/motor_cmd"
-      - "/nav2/motor_cmd"
-      - "/teleop/motor_cmd"
-
+    # Input/Output motor command topics
+    input_motor_topic: "/hybrid/motor"
     output_motor_topic: "/qcar2_motor_speed_cmd"
 
+    # LIDAR obstacle detection
     lidar_topic: "/scan"
+    lidar_obstacle_distance: 0.1              # meters (min distance to trigger stop)
+    lidar_angle_tolerance: 30.0               # degrees (±30° forward cone)
 
+    # Object detection topics
     person_detection_topic: "/detections/person"
     stop_sign_topic: "/detections/stop_sign"
     traffic_light_topic: "/detections/traffic_light"
     zebra_crossing_topic: "/detections/zebra_crossing"
 
-    input_motor_msg_type: "qcar2_interfaces/msg/MotorCommands"
-    output_motor_msg_type: "qcar2_interfaces/msg/MotorCommands"
+    # Person detection parameters
+    person_wait_timeout: 2.0                  # seconds to wait after person disappears
+
+    # Stop sign parameters
+    stop_sign_stop_time: 0.5                  # seconds to stop at stop sign
+    stop_sign_forward_time: 0.5               # seconds to advance straight (0 steering) after stop
+
+    # LED configuration
+    led_output_topic: "/qcar2_led_cmd"
+    led_color_moving: "green"                 # moving state LED color
+    led_color_stopped: "red"                  # stopped state LED color
+    led_color_caution: "orange"               # caution state (zebra) LED color
+
+    # Safety parameters
+    zebra_speed_reduction_factor: 0.85        # 85% = 15% speed reduction for zebra
+    obstacle_stop_timeout: 5.0                # max seconds to hold on obstacle
+
+    # Control loop rate
+    rate_hz: 50.0                             # control loop frequency (Hz)
