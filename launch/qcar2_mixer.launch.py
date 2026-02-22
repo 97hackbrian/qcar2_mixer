@@ -36,6 +36,7 @@ def generate_launch_description():
     planner_dir = get_package_share_directory('qcar2_planner')
     detections_dir = get_package_share_directory('qcar2_object_detections')
     tracking_dir = get_package_share_directory('qcar2_teleop')
+    qcar2_nodes_dir = get_package_share_directory('qcar2_nodes')
 
     # Config files
     tracking_config_file = os.path.join(tracking_dir, 'config', 'qcar2_tracking_params.yaml')
@@ -44,6 +45,7 @@ def generate_launch_description():
     lane_mapping_nvblox_config = os.path.join(lane_mapping_dir, 'config', 'nvblox_static.yaml')
     planner_config_file = os.path.join(planner_dir, 'config', 'params.yaml')
     detections_config_file = os.path.join(detections_dir, 'config', 'detections_params.yaml')
+    nav2_params_file = os.path.join(qcar2_nodes_dir, 'config', 'qcar2_slam_and_nav_virtual.yaml')
 
     # Launch arguments
     enable_bridge_arg = LaunchConfiguration('enable_bridge')
@@ -154,6 +156,7 @@ def generate_launch_description():
                 'enable_bridge': enable_bridge_arg,
                 'config_file': tracking_config_file,
                 'config_file_pid': tracking_pid_file,
+                'params_file': nav2_params_file,
             }.items(),
         ),
 
