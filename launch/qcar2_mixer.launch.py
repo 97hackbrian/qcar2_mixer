@@ -82,27 +82,27 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'lidar_obstacle_distance',
-            default_value='0.1',
+            default_value='0.2',
             description='Minimum distance (m) to trigger obstacle stop.'
         ),
         DeclareLaunchArgument(
             'zebra_speed_reduction_factor',
-            default_value='0.85',
+            default_value='0.1',
             description='Speed multiplier when zebra crossing detected (0.85 = 15% reduction).'
         ),
         DeclareLaunchArgument(
             'person_wait_timeout',
-            default_value='2.0',
+            default_value='10.0',
             description='Time (seconds) to wait after person disappears before resuming.'
         ),
         DeclareLaunchArgument(
             'stop_sign_stop_time',
-            default_value='0.5',
+            default_value='10.5',
             description='Time (seconds) to stop at stop sign.'
         ),
         DeclareLaunchArgument(
             'stop_sign_forward_time',
-            default_value='0.5',
+            default_value='5.5',
             description='Time (seconds) to advance straight after stop sign.'
         ),
         DeclareLaunchArgument(

@@ -6,7 +6,7 @@ qcar2_mixer:
 
     # LIDAR obstacle detection
     lidar_topic: "/scan"
-    lidar_obstacle_distance: 0.1              # meters (min distance to trigger stop)
+    lidar_obstacle_distance: 0.2              # meters (min distance to trigger stop)
     lidar_angle_tolerance: 30.0               # degrees (±30° forward cone)
 
     # Object detection topics
@@ -16,11 +16,11 @@ qcar2_mixer:
     zebra_crossing_topic: "/detections/zebra_crossing"
 
     # Person detection parameters
-    person_wait_timeout: 2.0                  # seconds to wait after person disappears
+    person_wait_timeout: 20.5                  # seconds to wait after person disappears
 
     # Stop sign parameters
-    stop_sign_stop_time: 0.5                  # seconds to stop at stop sign
-    stop_sign_forward_time: 0.5               # seconds to advance straight (0 steering) after stop
+    stop_sign_stop_time: 20.0                  # seconds to stop at stop sign
+    stop_sign_forward_time: 10.5               # seconds to advance straight (0 steering) after stop
 
     # LED configuration
     led_output_topic: "/qcar2_led_cmd"
@@ -29,8 +29,8 @@ qcar2_mixer:
     led_color_caution: "orange"               # caution state (zebra) LED color
 
     # Safety parameters
-    zebra_speed_reduction_factor: 0.85        # 85% = 15% speed reduction for zebra
-    obstacle_stop_timeout: 5.0                # max seconds to hold on obstacle
+    zebra_speed_reduction_factor: 0.1        # 85% = 15% speed reduction for zebra
+    obstacle_stop_timeout: 30.0                # max seconds to hold on obstacle
 
     # Control loop rate
     rate_hz: 50.0                             # control loop frequency (Hz)
