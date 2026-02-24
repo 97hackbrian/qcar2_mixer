@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'qcar2_mixer_node = qcar2_mixer.mixer_node:main',
+            'led_sequence_node = qcar2_mixer.led_sequence_node:main',
         ],
     },
 )
