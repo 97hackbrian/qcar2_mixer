@@ -16,7 +16,7 @@ qcar2_mixer:
     zebra_crossing_topic: "/detections/zebra_crossing"
 
     # Person detection parameters
-    person_wait_timeout: 20.5                  # seconds to wait after person disappears
+    person_wait_timeout: 2.0                  # seconds to wait after person disappears
 
     # Stop sign parameters
     stop_sign_stop_time: 20.0                  # seconds to stop at stop sign

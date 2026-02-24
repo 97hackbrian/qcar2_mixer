@@ -92,7 +92,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'person_wait_timeout',
-            default_value='10.0',
+            default_value='2.0',
             description='Time (seconds) to wait after person disappears before resuming.'
         ),
         DeclareLaunchArgument(
