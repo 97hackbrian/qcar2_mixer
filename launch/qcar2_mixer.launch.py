@@ -102,7 +102,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'stop_sign_forward_time',
-            default_value='3.5',
+            default_value='1.5',
             description='Time (seconds) to advance straight after stop sign.'
         ),
         DeclareLaunchArgument(

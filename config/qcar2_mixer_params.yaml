@@ -20,7 +20,7 @@ qcar2_mixer:
 
     # Stop sign parameters
     stop_sign_stop_time: 20.0                  # seconds to stop at stop sign
-    stop_sign_forward_time: 10.5               # seconds to advance straight (0 steering) after stop
+    stop_sign_forward_time: 1.5               # seconds to advance straight (0 steering) after stop
 
     # LED configuration
     led_output_topic: "/qcar2_led_cmd"
