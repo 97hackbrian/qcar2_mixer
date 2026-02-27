@@ -422,7 +422,7 @@ class QCar2Mixer(Node):
         # P4 — Traffic light + Zebra crossing
         # ═══════════════════════════════════════════════════════════
         if self.traffic_light_detected:
-            if self.zebra_detected and self.traffic_light_state == 'red':
+            if self.zebra_detected and self.traffic_light_state == 'RED':
                 self._emit(
                     steering=self._steering(),
                     speed=0.0,
