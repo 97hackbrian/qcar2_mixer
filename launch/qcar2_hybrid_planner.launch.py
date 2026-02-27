@@ -176,4 +176,15 @@ def generate_launch_description():
             ],
             emulate_tty=True,
         ),
+
+        # ─────────────────────────────────────────────────────────
+        # LED SEQUENCE NODE
+        # ─────────────────────────────────────────────────────────
+        Node(
+            package='qcar2_mixer',
+            executable='led_sequence_node',
+            name='led_sequence_node',
+            output='screen',
+            emulate_tty=True,
+        ),
     ])
