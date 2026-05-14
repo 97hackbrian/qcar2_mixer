@@ -1,7 +1,9 @@
 qcar2_mixer:
   ros__parameters:
     # Input/Output motor command topics
-    input_motor_topic: "/hybrid/motor"
+    # OLD_HYBRID_SWITCH_DISABLED_NAV2_ONLY — antes: "/hybrid/motor"
+    # input_motor_topic: "/hybrid/motor"
+    input_motor_topic: "/nav2/motor_cmd"
     output_motor_topic: "/qcar2_motor_speed_cmd"
 
     # LIDAR obstacle detection
