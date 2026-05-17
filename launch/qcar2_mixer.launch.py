@@ -49,15 +49,6 @@ def generate_launch_description():
 
     # Launch arguments
     enable_bridge_arg = LaunchConfiguration('enable_bridge')
-    output_motor_topic = LaunchConfiguration('output_motor_topic')
-    lidar_topic = LaunchConfiguration('lidar_topic')
-    lidar_obstacle_distance = LaunchConfiguration('lidar_obstacle_distance')
-    zebra_speed_reduction = LaunchConfiguration('zebra_speed_reduction_factor')
-    person_wait_timeout = LaunchConfiguration('person_wait_timeout')
-    stop_sign_stop_time = LaunchConfiguration('stop_sign_stop_time')
-    stop_sign_forward_time = LaunchConfiguration('stop_sign_forward_time')
-    rate_hz = LaunchConfiguration('rate_hz')
-
     # Parameters file
     mixer_params_file = os.path.join(mixer_dir, 'config', 'qcar2_mixer_params.yaml')
 
@@ -69,46 +60,6 @@ def generate_launch_description():
             'enable_bridge',
             default_value='true',
             description='Enable hybrid bridge for Nav2 + lane fusion.'
-        ),
-        DeclareLaunchArgument(
-            'output_motor_topic',
-            default_value='/qcar2_motor_speed_cmd',
-            description='Final motor command output topic.'
-        ),
-        DeclareLaunchArgument(
-            'lidar_topic',
-            default_value='/scan',
-            description='LIDAR topic for obstacle detection.'
-        ),
-        DeclareLaunchArgument(
-            'lidar_obstacle_distance',
-            default_value='0.2',
-            description='Minimum distance (m) to trigger obstacle stop.'
-        ),
-        DeclareLaunchArgument(
-            'zebra_speed_reduction_factor',
-            default_value='0.1',
-            description='Speed multiplier when zebra crossing detected (0.85 = 15% reduction).'
-        ),
-        DeclareLaunchArgument(
-            'person_wait_timeout',
-            default_value='2.0',
-            description='Time (seconds) to wait after person disappears before resuming.'
-        ),
-        DeclareLaunchArgument(
-            'stop_sign_stop_time',
-            default_value='10.5',
-            description='Time (seconds) to stop at stop sign.'
-        ),
-        DeclareLaunchArgument(
-            'stop_sign_forward_time',
-            default_value='1.5',
-            description='Time (seconds) to advance straight after stop sign.'
-        ),
-        DeclareLaunchArgument(
-            'rate_hz',
-            default_value='50.0',
-            description='Mixer control loop frequency (Hz).'
         ),
 
         # ─────────────────────────────────────────────────────────
@@ -168,19 +119,7 @@ def generate_launch_description():
             executable='qcar2_mixer_node',
             name='qcar2_mixer',
             output='screen',
-            parameters=[
-                mixer_params_file,
-                {
-                    'output_motor_topic': output_motor_topic,
-                    'lidar_topic': lidar_topic,
-                    'lidar_obstacle_distance': lidar_obstacle_distance,
-                    'zebra_speed_reduction_factor': zebra_speed_reduction,
-                    'person_wait_timeout': person_wait_timeout,
-                    'stop_sign_stop_time': stop_sign_stop_time,
-                    'stop_sign_forward_time': stop_sign_forward_time,
-                    'rate_hz': rate_hz,
-                }
-            ],
+            parameters=[mixer_params_file],
             emulate_tty=True,
         ),
     ])

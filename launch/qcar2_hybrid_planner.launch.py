@@ -37,7 +37,7 @@ def generate_launch_description():
 
     detections_config_file_arg = DeclareLaunchArgument(
         'detections_config_file',
-        default_value=os.path.join(detections_dir, 'config', 'qcar2_object_detections_params.yaml'),
+        default_value=os.path.join(detections_dir, 'config', 'detections_params.yaml'),
         description='Path to the parameters YAML file for object detections'
     )
 
@@ -47,34 +47,6 @@ def generate_launch_description():
         description='Path to the qcar2_mixer parameters YAML file'
     )
     
-    output_motor_topic_arg = DeclareLaunchArgument(
-        'output_motor_topic',
-        default_value='/qcar2_motor_speed_cmd',
-        description='Final motor command topic to publish hardware commands'
-    )
-    
-    lidar_topic_arg = DeclareLaunchArgument(
-        'lidar_topic', default_value='/scan'
-    )
-    lidar_obstacle_distance_arg = DeclareLaunchArgument(
-        'lidar_obstacle_distance', default_value='0.3'
-    )
-    zebra_speed_reduction_arg = DeclareLaunchArgument(
-        'zebra_speed_reduction', default_value='0.5'
-    )
-    person_wait_timeout_arg = DeclareLaunchArgument(
-        'person_wait_timeout', default_value='5.0'
-    )
-    stop_sign_stop_time_arg = DeclareLaunchArgument(
-        'stop_sign_stop_time', default_value='3.0'
-    )
-    stop_sign_forward_time_arg = DeclareLaunchArgument(
-        'stop_sign_forward_time', default_value='2.0'
-    )
-    rate_hz_arg = DeclareLaunchArgument(
-        'rate_hz', default_value='30.0'
-    )
-
     # ─── Launch Configurations ───
     nav_params_file = LaunchConfiguration('nav_params_file')
     # OLD_TRACKING_DISABLED_NAV2_ONLY
@@ -82,14 +54,6 @@ def generate_launch_description():
     map_yaml_path = LaunchConfiguration('map_yaml_path')
     detections_config_file = LaunchConfiguration('detections_config_file')
     mixer_params_file = LaunchConfiguration('mixer_params_file')
-    output_motor_topic = LaunchConfiguration('output_motor_topic')
-    lidar_topic = LaunchConfiguration('lidar_topic')
-    lidar_obstacle_distance = LaunchConfiguration('lidar_obstacle_distance')
-    zebra_speed_reduction = LaunchConfiguration('zebra_speed_reduction')
-    person_wait_timeout = LaunchConfiguration('person_wait_timeout')
-    stop_sign_stop_time = LaunchConfiguration('stop_sign_stop_time')
-    stop_sign_forward_time = LaunchConfiguration('stop_sign_forward_time')
-    rate_hz = LaunchConfiguration('rate_hz')
 
     # ─── 1) OLD: mamalaunch (from qcar2_teleop) ───
     # OLD_MAMALAUNCH_DISABLED_NAV2_ONLY — Reemplazado por qcar2_nav2_only_launch.py
@@ -161,14 +125,6 @@ def generate_launch_description():
         map_yaml_arg,
         detections_config_file_arg,
         mixer_params_file_arg,
-        output_motor_topic_arg,
-        lidar_topic_arg,
-        lidar_obstacle_distance_arg,
-        zebra_speed_reduction_arg,
-        person_wait_timeout_arg,
-        stop_sign_stop_time_arg,
-        stop_sign_forward_time_arg,
-        rate_hz_arg,
         
         # Launches
         # OLD_MAMALAUNCH_DISABLED_NAV2_ONLY
@@ -190,21 +146,7 @@ def generate_launch_description():
             executable='qcar2_mixer_node',
             name='qcar2_mixer',
             output='screen',
-            parameters=[
-                mixer_params_file,
-                {
-                    # OLD_HYBRID_SWITCH_DISABLED_NAV2_ONLY — antes: '/hybrid/motor'
-                    'input_motor_topic': '/nav2/motor_cmd',
-                    'output_motor_topic': output_motor_topic,
-                    'lidar_topic': lidar_topic,
-                    'lidar_obstacle_distance': lidar_obstacle_distance,
-                    'zebra_speed_reduction_factor': zebra_speed_reduction,
-                    'person_wait_timeout': person_wait_timeout,
-                    'stop_sign_stop_time': stop_sign_stop_time,
-                    'stop_sign_forward_time': stop_sign_forward_time,
-                    'rate_hz': rate_hz,
-                }
-            ],
+            parameters=[mixer_params_file],
             emulate_tty=True,
         ),
 

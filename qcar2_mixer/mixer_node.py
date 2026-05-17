@@ -68,10 +68,10 @@ class QCar2Mixer(Node):
         self.declare_parameter('lidar_topic', '/scan')
         self.declare_parameter('lidar_obstacle_distance', 0.15)  # meters
         self.declare_parameter('lidar_angle_tolerance', 20.0)   # degrees (±30°)
-        self.declare_parameter('zebra_speed_reduction_factor', 0.85)  # 85% = 15% reduction
+        self.declare_parameter('zebra_speed_reduction_factor', 0.1)  # speed multiplier in zebra zones
         self.declare_parameter('person_wait_timeout', 2.0)      # seconds post-person-disappear
-        self.declare_parameter('stop_sign_stop_time', 0.5)      # seconds to stop at stop sign
-        self.declare_parameter('stop_sign_forward_time', 0.5)   # seconds to advance straight
+        self.declare_parameter('stop_sign_stop_time', 20.0)     # seconds to stop at stop sign
+        self.declare_parameter('stop_sign_forward_time', 1.5)   # seconds to advance straight
         self.declare_parameter('rate_hz', 50.0)
 
         # Detection topics
@@ -82,7 +82,7 @@ class QCar2Mixer(Node):
 
         # LED configuration
         self.declare_parameter('led_output_topic', '/qcar2_led_cmd')
-        self.declare_parameter('obstacle_stop_timeout', 5.0)
+        self.declare_parameter('obstacle_stop_timeout', 30.0)
 
         # Load parameters
         self._load_parameters()
