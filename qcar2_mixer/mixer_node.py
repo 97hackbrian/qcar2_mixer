@@ -66,8 +66,8 @@ class QCar2Mixer(Node):
         self.declare_parameter('input_motor_topic', '/nav2/motor_cmd')
         self.declare_parameter('output_motor_topic', '/qcar2_motor_speed_cmd')
         self.declare_parameter('lidar_topic', '/scan')
-        self.declare_parameter('lidar_obstacle_distance', 0.1)  # meters
-        self.declare_parameter('lidar_angle_tolerance', 10.0)   # degrees (±30°)
+        self.declare_parameter('lidar_obstacle_distance', 0.15)  # meters
+        self.declare_parameter('lidar_angle_tolerance', 20.0)   # degrees (±30°)
         self.declare_parameter('zebra_speed_reduction_factor', 0.85)  # 85% = 15% reduction
         self.declare_parameter('person_wait_timeout', 2.0)      # seconds post-person-disappear
         self.declare_parameter('stop_sign_stop_time', 0.5)      # seconds to stop at stop sign

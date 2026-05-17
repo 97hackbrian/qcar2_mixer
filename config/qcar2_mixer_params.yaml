@@ -8,8 +8,8 @@ qcar2_mixer:
 
     # LIDAR obstacle detection
     lidar_topic: "/scan"
-    lidar_obstacle_distance: 0.1              # meters (min distance to trigger stop)
-    lidar_angle_tolerance: 10.0               # degrees (±30° forward cone)
+    lidar_obstacle_distance: 0.15              # meters (min distance to trigger stop)
+    lidar_angle_tolerance: 20.0               # degrees (±30° forward cone)
 
     # Object detection topics
     person_detection_topic: "/detections/person"
