@@ -25,6 +25,7 @@ Publishes:
   - /qcar2_motor_speed_cmd (qcar2_interfaces/MotorCommands) — final output
   - /qcar2_led_cmd (qcar2_interfaces/BooleanLeds) — LED state
   - /mixer/state (std_msgs/String) — debug state info
+  - /btled_override_id (std_msgs/Int32) — LED strip safety override
 
 Author: Quanser QCar2 Team
 License: Apache-2.0
@@ -35,7 +36,7 @@ from rclpy.node import Node
 from rcl_interfaces.msg import SetParametersResult
 
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import String
+from std_msgs.msg import String, Int32
 from qcar2_interfaces.msg import MotorCommands, BooleanLeds
 
 from qcar2_object_detections.msg import (
@@ -175,6 +176,16 @@ class QCar2Mixer(Node):
             '/mixer/state',
             10
         )
+
+        # ── LED strip override publisher (safety → red) ──────────────
+        # Publishes to /btled_override_id so the LED manager can force
+        # the RGB strip to red during ANY safety stop condition.
+        self.pub_led_override = self.create_publisher(
+            Int32,
+            '/btled_override_id',
+            10
+        )
+        self.strip_led_override_active = False
 
         # ─────────────────────────────────────────────────────────────
         # TIMER (control loop)
@@ -339,30 +350,22 @@ class QCar2Mixer(Node):
         # P1 — LIDAR obstacle (highest priority)
         # ═══════════════════════════════════════════════════════════
         if self.lidar_obstacle_detected:
-            self._emit(
-                steering=self._steering(),
-                speed=0.0,
-                led='red',
-                state='STOPPED_LIDAR_OBSTACLE',
-            )
+            self._emit_safety_stop('STOPPED_LIDAR_OBSTACLE')
             return
 
         # ═══════════════════════════════════════════════════════════
         # P2 — Person detected
         # ═══════════════════════════════════════════════════════════
         if self.person_detected:
-            self._emit(
-                steering=self._steering(),
-                speed=0.0,
-                led='red',
-                state='STOPPED_PERSON',
-            )
+            self._emit_safety_stop('STOPPED_PERSON')
             return
 
         # P2b — Post-disappear wait
         if self.person_in_wait and self.person_last_detected_time is not None:
             elapsed = (now - self.person_last_detected_time).nanoseconds * 1e-9
             if elapsed < self.person_wait_timeout:
+                # Still in post-person wait — keep strip red
+                self._force_strip_red()
                 self._emit(
                     steering=self._steering(),
                     speed=0.0,
@@ -384,6 +387,8 @@ class QCar2Mixer(Node):
 
             if self.stop_sign_state == self.STOPSIGN_STOPPING:
                 if elapsed < self.stop_sign_stop_time:
+                    # Stopped at stop sign — keep strip red
+                    self._force_strip_red()
                     self._emit(
                         steering=self._steering(),
                         speed=0.0,
@@ -395,8 +400,10 @@ class QCar2Mixer(Node):
                     )
                     return
                 else:
+                    # Transition to exiting phase — release override
                     self.stop_sign_state = self.STOPSIGN_EXITING
                     self.stop_sign_phase_start = now
+                    self._restore_strip_led()
                     self.get_logger().info('Stop sign — advancing straight.')
                     elapsed = 0.0
 
@@ -423,12 +430,7 @@ class QCar2Mixer(Node):
         # ═══════════════════════════════════════════════════════════
         if self.traffic_light_detected:
             if self.zebra_detected and self.traffic_light_state == 'RED':
-                self._emit(
-                    steering=self._steering(),
-                    speed=0.0,
-                    led='red',
-                    state='STOPPED_RED_LIGHT_ZEBRA',
-                )
+                self._emit_safety_stop('STOPPED_RED_LIGHT_ZEBRA')
                 return
             else:
                 # Any other light state (no zebra, green, yellow, unknown) → bypass
@@ -491,10 +493,51 @@ class QCar2Mixer(Node):
 
     def _emit_bypass(self, state: str = 'BYPASS'):
         """Publish upstream command unchanged."""
+        # No safety condition active — release LED strip override if it was on
+        self._restore_strip_led()
         self._emit(
             steering=self._steering(),
             speed=self._speed(),
             led='green',
+            state=state,
+        )
+
+    # ── LED strip override helpers ────────────────────────────────────
+
+    def _force_strip_red(self):
+        """Force RGB LED strip to red using LED override topic.
+
+        Publishes data=0 (RED) to /btled_override_id only once per
+        safety event to avoid flooding the topic.
+        """
+        if not self.strip_led_override_active:
+            msg = Int32()
+            msg.data = 0  # ID 0 = RED on the RGB LED strip
+            self.pub_led_override.publish(msg)
+            self.strip_led_override_active = True
+
+    def _restore_strip_led(self):
+        """Release RGB LED strip override and restore last mission color.
+
+        Publishes data=-1 to /btled_override_id so the LED manager
+        reverts to the last normal color sent by the Behavior Tree.
+        """
+        if self.strip_led_override_active:
+            msg = Int32()
+            msg.data = -1  # release override
+            self.pub_led_override.publish(msg)
+            self.strip_led_override_active = False
+
+    def _emit_safety_stop(self, state: str):
+        """Helper: force LED strip red + emit a safety stop command.
+
+        Use this for any condition that stops the QCar for safety.
+        """
+        self._force_strip_red()
+        self._emit(
+            steering=self._steering(),
+            speed=0.0,
+            led='red',
             state=state,
         )
 

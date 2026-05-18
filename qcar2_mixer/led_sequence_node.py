@@ -6,18 +6,23 @@ Subscribes to string commands and sets the LED strip color on the
 real hardware by calling the `led_color_id` parameter on qcar2_hardware.
 
 Subscribes:
-  /btled  (std_msgs/String)
+  /btled              (std_msgs/String) — mission color from Behavior Tree
+  /btled_override_id  (std_msgs/Int32)  — safety override (>=0 force, -1 release)
 
 Command → Color mapping:
   "init"          →  Magenta  (led_color_id = 5)   Waiting at Taxi Hub
   "to_pickup"     →  Green    (led_color_id = 1)   Driving to pick-up
   "pickup_done"   →  Blue     (led_color_id = 2)   Pick-up completed
-  "dropoff_done"  →  Yellow   (led_color_id = 3)   Drop-off completed (closest to Orange)
+  "dropoff_done"  →  Orange   (led_color_id = 3)   Drop-off completed
   "idle"          →  Magenta  (led_color_id = 5)   Waiting for next ride
 
 Hardware color IDs (from qcar2_hardware.cpp):
   0 = Red (255,0,0)  |  1 = Green (0,255,0)    |  2 = Blue (0,0,255)
-  3 = Yellow (255,255,0)  |  4 = Cyan (0,255,255)  |  5 = Magenta (255,0,255)
+  3 = Orange (255,165,0)  |  4 = Cyan (0,255,255)  |  5 = Magenta (255,0,255)
+
+Override protocol:
+  data >= 0  → force LED strip to that color ID (e.g. 0 = RED for safety)
+  data == -1 → release override, restore last mission color from BT
 
 Author: auto-generated
 License: Apache-2.0
@@ -25,7 +30,7 @@ License: Apache-2.0
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Int32
 from rcl_interfaces.srv import SetParameters
 from rcl_interfaces.msg import Parameter
 from rclpy.parameter import ParameterType
@@ -37,7 +42,7 @@ COLOR_MAP = {
     'init':         (5, 'MAGENTA'),    # Waiting at Taxi Hub
     'to_pickup':    (1, 'GREEN'),      # Driving to pick-up
     'pickup_done':  (2, 'BLUE'),       # Pick-up completed
-    'dropoff_done': (3, 'YELLOW'),     # Drop-off completed (closest to Orange)
+    'dropoff_done': (3, 'ORANGE'),     # Drop-off completed
     'idle':         (5, 'MAGENTA'),    # Waiting for next ride
 }
 
@@ -67,7 +72,13 @@ class LEDSequenceNode(Node):
                 'commands will be sent when it appears.'
             )
 
-        # ── Subscriber: incoming LED commands ─────────────────────────
+        # ── Override state for safety LED control ─────────────────────
+        # last_mission_led_id: remembers the last color sent by the BT
+        # override_led_id: -1 = no override, >=0 = forced color ID
+        self.last_mission_led_id = 5   # default magenta (init)
+        self.override_led_id = -1      # no override active
+
+        # ── Subscriber: incoming LED commands from Behavior Tree ──────
         self.sub_cmd = self.create_subscription(
             String,
             '/btled',
@@ -75,18 +86,32 @@ class LEDSequenceNode(Node):
             10,
         )
 
+        # ── Subscriber: safety override from mixer ────────────────────
+        #    data >= 0 → force that color ID on the strip
+        #    data == -1 → release override, restore last BT color
+        self.sub_led_override = self.create_subscription(
+            Int32,
+            '/btled_override_id',
+            self._callback_led_override,
+            10,
+        )
+
         self.get_logger().info(
-            'LED Strip Controller started  |  listening on /btled'
+            'LED Strip Controller started  |  listening on /btled + /btled_override_id'
         )
         self.get_logger().info(
             f'Known commands: {list(COLOR_MAP.keys())}'
         )
 
     # ──────────────────────────────────────────────────────────────────
-    # Callback
+    # Callback: normal BT mission color
     # ──────────────────────────────────────────────────────────────────
     def _on_led_command(self, msg: String):
-        """Process an incoming LED command and apply it to the hardware."""
+        """Process an incoming LED command from the Behavior Tree.
+
+        Always saves the color as last_mission_led_id.
+        Only applies it to hardware if no safety override is active.
+        """
         cmd = msg.data.strip().lower()
 
         # Look up the command
@@ -100,12 +125,45 @@ class LEDSequenceNode(Node):
             return
 
         color_id, label = entry
-        self.get_logger().info(
-            f'LED command: "{cmd}" → {label} (led_color_id={color_id})'
-        )
+        # Always remember the latest mission color from the BT
+        self.last_mission_led_id = color_id
 
-        # Send the parameter change to the hardware node
-        self._set_led_color(color_id)
+        if self.override_led_id == -1:
+            # No override active → apply mission color normally
+            self._set_led_color(color_id)
+            self.get_logger().info(
+                f'BT LED: "{cmd}" → {label} (led_color_id={color_id})'
+            )
+        else:
+            # Override active → save color but do NOT apply it yet
+            self.get_logger().info(
+                f'BT LED saved but not applied (override active): '
+                f'"{cmd}" → {label} id={color_id}'
+            )
+
+    # ──────────────────────────────────────────────────────────────────
+    # Callback: safety override from mixer
+    # ──────────────────────────────────────────────────────────────────
+    def _callback_led_override(self, msg: Int32):
+        """Handle LED override commands from the safety mixer.
+
+        data >= 0 : force LED strip to that color ID (e.g. 0 = RED).
+        data == -1: release override, restore last mission color.
+        """
+        led_id = int(msg.data)
+
+        if led_id >= 0:
+            # Activate override — force the requested color
+            self.override_led_id = led_id
+            self._set_led_color(led_id)
+            self.get_logger().info(f'LED override ACTIVE: id={led_id}')
+        else:
+            # Release override — restore last BT mission color
+            self.override_led_id = -1
+            self._set_led_color(self.last_mission_led_id)
+            self.get_logger().info(
+                f'LED override RELEASED. Restoring mission id={self.last_mission_led_id}'
+            )
 
     # ──────────────────────────────────────────────────────────────────
     # Hardware interaction
